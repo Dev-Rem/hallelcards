@@ -1,6 +1,6 @@
 import { Body, Controller, Headers, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { TransactionsService } from '../transactions/transactions.service';
 import { PaystackService } from './paystack.service';
@@ -19,7 +19,7 @@ export class WebhookController {
     @Headers('x-paystack-signature') signature: string,
     @Body() payload: any,
   ) {
-    const secret = this.config.get<string>('PAYSTACK_SECRET_KEY') as string;
+    const secret = this.config.get<string>('PAYSTACK_SECRET_KEY');
     const computed = crypto
       .createHmac('sha512', secret)
       .update(JSON.stringify(payload))

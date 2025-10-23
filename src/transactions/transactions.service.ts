@@ -11,6 +11,7 @@ import {
   TransactionStatus,
 } from './schemas/transaction.schema';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { Inject, forwardRef } from '@nestjs/common';
 import { PaystackService } from '../payments/paystack.service';
 import { Brand, BrandDocument } from '../cards/schemas/catalog.schema';
 
@@ -20,6 +21,7 @@ export class TransactionsService {
     @InjectModel(Transaction.name)
     private readonly txModel: Model<TransactionDocument>,
     @InjectModel(Brand.name) private readonly brandModel: Model<BrandDocument>,
+    @Inject(forwardRef(() => PaystackService))
     private readonly paystack: PaystackService,
   ) {}
 
@@ -68,6 +70,7 @@ export class TransactionsService {
       { _id: tx._id },
       { $set: { paystackReference: init.reference } },
     );
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return { transactionId: tx._id.toString(), paystack: init };
   }
 
