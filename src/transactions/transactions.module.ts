@@ -2,21 +2,28 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TransactionsService } from './transactions.service';
 import { TransactionsController } from './transactions.controller';
+import { AdminTransactionsController } from './admin-transactions.controller';
 import { Transaction, TransactionSchema } from './schemas/transaction.schema';
 import { Brand, BrandSchema } from '../cards/schemas/catalog.schema';
 import { ConfigModule } from '@nestjs/config';
 import { PaymentsModule } from '../payments/payments.module';
+import { SettingsModule } from '../settings/settings.module';
+import { DiscountsModule } from '../discounts/discounts.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     ConfigModule,
     forwardRef(() => PaymentsModule),
+    SettingsModule,
+    DiscountsModule,
+    NotificationsModule,
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
       { name: Brand.name, schema: BrandSchema },
     ]),
   ],
-  controllers: [TransactionsController],
+  controllers: [TransactionsController, AdminTransactionsController],
   providers: [TransactionsService],
   exports: [TransactionsService],
 })

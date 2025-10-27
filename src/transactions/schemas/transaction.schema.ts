@@ -36,6 +36,12 @@ export class Transaction {
   @Prop({ required: true })
   totalAmount: number;
 
+  @Prop({ required: false })
+  discountCode?: string;
+
+  @Prop({ required: false })
+  discountAmount?: number;
+
   @Prop({ required: true, default: 'NGN' })
   currency: string;
 
