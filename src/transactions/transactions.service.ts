@@ -26,6 +26,9 @@ export class TransactionsService {
     private readonly discounts: DiscountsService,
     private readonly notifications: NotificationsService,
   ) {}
+  async getByReference(reference: string) {
+    return this.txModel.findOne({ paystackReference: reference });
+  }
 
   private computePriceWithMarkup(base: number, markupPercentage: number) {
     return base * (1 + markupPercentage / 100);
@@ -229,8 +232,6 @@ export class TransactionsService {
       {
         $set: {
           status: TransactionStatus.REFUNDED,
-        },
-        $push: {
           paymentDetails: refundRes,
         },
       },
