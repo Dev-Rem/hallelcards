@@ -44,7 +44,7 @@ export class WebhookController {
 
     if (event?.includes('success')) {
       const verification = await this.paystack.verify(reference);
-      await this.tx.markSuccessByReference(reference, verification);
+      await this.tx.markSuccessIfValidPaystack(reference, verification);
     } else if (event?.includes('failed')) {
       await this.tx.markFailedByReference(reference, payload);
     }

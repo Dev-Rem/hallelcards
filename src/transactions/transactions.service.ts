@@ -145,6 +145,31 @@ export class TransactionsService {
     void this.notifications.purchaseFailed({ reference, reason: 'Webhook failure' });
   }
 
+  // Validate paystack verification payload (amount/currency) before marking success
+  async markSuccessIfValidPaystack(reference: string, verification: any) {
+    const tx = await this.txModel.findOne({ paystackReference: reference });
+    if (!tx) return;
+    const expectedKobo = Math.round((tx.totalAmount || 0) * 100);
+    const amount = Number(verification?.amount ?? 0);
+    const currency = String(verification?.currency || '').toUpperCase();
+    const status = String(verification?.status || '').toLowerCase();
+
+    const amountOk = amount === expectedKobo;
+    const currencyOk = !tx.currency || currency === String(tx.currency).toUpperCase();
+    const statusOk = status === 'success';
+
+    if (amountOk && currencyOk && statusOk) {
+      await this.markSuccessByReference(reference, verification);
+    } else {
+      await this.markFailedByReference(reference, {
+        reason: 'Amount/currency/status validation failed',
+        verification,
+        expectedKobo,
+        expectedCurrency: tx.currency,
+      });
+    }
+  }
+
   // -------- Admin queries --------
   async adminQueryPurchases(query: {
     status?: TransactionStatus;
