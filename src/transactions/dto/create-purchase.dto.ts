@@ -42,4 +42,9 @@ export class CreatePurchaseDto {
   @ApiProperty({ type: CustomerDto, required: false })
   @IsOptional()
   customer?: CustomerDto;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  discountCode?: string;
 }

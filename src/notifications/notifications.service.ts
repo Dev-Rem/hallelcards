@@ -72,6 +72,19 @@ export class NotificationsService {
     `;
     await this.sendAdmin('Purchase Failed', html);
   }
+
+  async sendCardDelivery(toEmail: string, providerPayload: any) {
+    const transporter = this.createTransport();
+    const from = this.config.get<string>('SMTP_USER');
+    if (!transporter || !from) return;
+
+    const html = `
+      <h3>Your gift card is here</h3>
+      <p>Details:</p>
+      <pre>${JSON.stringify(providerPayload, null, 2)}</pre>
+    `;
+    await transporter.sendMail({ to: toEmail, from, subject: 'Your Gift Card', html });
+  }
 }
 
 

@@ -7,6 +7,7 @@ import { PaystackService } from './paystack.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { WebhookEvent, WebhookEventDocument } from './schemas/webhook-event.schema';
+import { FulfillmentService } from '../transactions/fulfillment.service';
 
 @ApiTags('payments')
 @Controller('payments/webhook')
@@ -17,6 +18,7 @@ export class WebhookController {
     private readonly paystack: PaystackService,
     @InjectModel(WebhookEvent.name)
     private readonly whModel: Model<WebhookEventDocument>,
+    private readonly fulfillment: FulfillmentService,
   ) {}
 
   @Post('paystack')
@@ -45,6 +47,9 @@ export class WebhookController {
     if (event?.includes('success')) {
       const verification = await this.paystack.verify(reference);
       await this.tx.markSuccessIfValidPaystack(reference, verification);
+      // Trigger fulfillment (don’t store any codes; email only)
+      const tx = await this.tx['txModel'].findOne({ paystackReference: reference });
+      if (tx) await this.fulfillment.fulfillAndEmail(tx);
     } else if (event?.includes('failed')) {
       await this.tx.markFailedByReference(reference, payload);
     }
