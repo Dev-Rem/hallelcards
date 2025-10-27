@@ -39,6 +39,26 @@ export class AdminCardsService {
     );
   }
 
+  async updateBrandMarkup(id: string, markupPercentage: number) {
+    return this.brandModel.findByIdAndUpdate(
+      id,
+      { $set: { markupOverride: markupPercentage } },
+      { new: true },
+    );
+  }
+
+  async updateProductMarkup(
+    id: string,
+    productId: string,
+    markupPercentage: number,
+  ) {
+    return this.brandModel.findOneAndUpdate(
+      { _id: id, 'products.id': Number(productId) },
+      { $set: { 'products.$.markupOverride': markupPercentage } },
+      { new: true },
+    );
+  }
+
   // --- Sync without Redis ---
   async syncFromProviderAndConvert(): Promise<{
     processed: number;

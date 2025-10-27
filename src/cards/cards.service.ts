@@ -16,24 +16,52 @@ export class CardsService {
   ) {}
 
   async queryBrands(dto: QueryCardsDto, excludePrice = false) {
-    const { page = 1, limit = 10, search, category, minPrice, maxPrice } = dto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      category,
+      minPrice,
+      maxPrice,
+      priceCurrency = 'USD',
+      currencyCode,
+      countryCode,
+      sortBy = 'name',
+      sortDir = 'asc',
+      inStock,
+    } = dto;
 
     const match: PipelineStage.Match['$match'] = {};
 
-    if (search) {
-      match['name'] = { $regex: search, $options: 'i' };
-    }
-    if (category) {
-      match['categories.name'] = category;
-    }
+    if (search) match['name'] = { $regex: search, $options: 'i' };
+    if (category) match['categories.name'] = category;
+    if (currencyCode) match['currencyCode'] = currencyCode.toUpperCase();
+    if (countryCode) match['countryCode'] = countryCode.toUpperCase();
+    if (typeof inStock === 'boolean') match['products.count'] = inStock ? { $gt: 0 } : 0;
+
     if (minPrice || maxPrice) {
-      match['products.converted.minUsd'] = {};
-      if (minPrice) match['products.converted.minUsd'].$gte = minPrice;
-      if (maxPrice) match['products.converted.minUsd'].$lte = maxPrice;
+      const priceField =
+        priceCurrency === 'NGN'
+          ? 'products.converted.minNgn'
+          : 'products.converted.minUsd';
+      match[priceField] = {} as any;
+      if (minPrice) (match[priceField] as any).$gte = minPrice;
+      if (maxPrice) (match[priceField] as any).$lte = maxPrice;
+    }
+
+    const sortStage: Record<string, 1 | -1> = {};
+    if (sortBy === 'price') {
+      sortStage[priceCurrency === 'NGN' ? 'products.converted.minNgn' : 'products.converted.minUsd'] =
+        sortDir === 'desc' ? -1 : 1;
+    } else if (sortBy === 'modifiedDate') {
+      sortStage['modifiedDate'] = sortDir === 'desc' ? -1 : 1;
+    } else {
+      sortStage['name'] = sortDir === 'desc' ? -1 : 1;
     }
 
     const pipeline: PipelineStage[] = [
       { $match: match },
+      { $sort: sortStage },
       {
         $facet: {
           items: [

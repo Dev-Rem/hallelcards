@@ -20,6 +20,6 @@ import { AdminCardsService } from './admin-cards.service';
   ],
   controllers: [CardsController, AdminCardsController],
   providers: [CardsService, AdminCardsService],
-  exports: [CardsService],
+  exports: [CardsService, AdminCardsService],
 })
 export class CardsModule {}
