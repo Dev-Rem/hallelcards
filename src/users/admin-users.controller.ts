@@ -9,8 +9,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { AdminJwtStrategy } from '../auth/jwt-admin.strategy';
 import { Roles } from '../common/roles.decorator';
+import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 class UpdateUserDto {
   name?: string;
@@ -20,7 +21,7 @@ class UpdateUserDto {
 
 @ApiTags('admin-users')
 @ApiBearerAuth('access-token')
-@UseGuards(AdminJwtStrategy, Roles)
+@UseGuards(AdminAuthGuard, RolesGuard)
 @Roles('admin')
 @Controller('admin/users')
 export class AdminUsersController {

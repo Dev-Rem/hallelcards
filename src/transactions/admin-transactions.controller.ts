@@ -1,0 +1,56 @@
+import { Body, Controller, Get, Param, Put, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { TransactionsService } from './transactions.service';
+import { AdminQueryPurchasesDto } from './dto/admin-query-purchases.dto';
+import { Roles } from '../common/roles.decorator';
+import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { TransactionStatus } from './schemas/transaction.schema';
+import { AdminRefundDto } from './dto/admin-refund.dto';
+
+@ApiTags('admin-purchases')
+@ApiBearerAuth('access-token')
+@UseGuards(AdminAuthGuard, RolesGuard)
+@Roles('admin')
+@Controller('admin/purchases')
+export class AdminTransactionsController {
+  constructor(private readonly tx: TransactionsService) {}
+
+  @Get()
+  async list(@Query() query: AdminQueryPurchasesDto) {
+    return this.tx.adminQueryPurchases(query);
+  }
+
+  @Get(':id')
+  async detail(@Param('id') id: string) {
+    return this.tx.adminGetPurchaseById(id);
+  }
+
+  @Put(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: TransactionStatus,
+  ) {
+    return this.tx.adminUpdateStatus(id, status);
+  }
+
+  @Get('metrics/summary')
+  async summary(@Query('from') from?: string, @Query('to') to?: string) {
+    return this.tx.adminMetricsSummary(from, to);
+  }
+
+  @Get('metrics/top-brands')
+  async topBrands(@Query('limit') limit = 10, @Query('from') from?: string, @Query('to') to?: string) {
+    return this.tx.adminTopBrands(Number(limit), from, to);
+  }
+
+  @Post(':id/refund')
+  async refund(
+    @Param('id') id: string,
+    @Body() body: AdminRefundDto,
+  ) {
+    return this.tx.adminRefund(id, body.amount);
+  }
+}
+
+
