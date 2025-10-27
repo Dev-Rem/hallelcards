@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Type } from 'class-transformer';
@@ -39,4 +39,35 @@ export class QueryCardsDto {
   @Type(() => Number)
   @IsInt()
   maxPrice?: number;
+
+  @ApiProperty({ required: false, enum: ['USD', 'NGN'], default: 'USD' })
+  @IsOptional()
+  @IsString()
+  priceCurrency?: 'USD' | 'NGN' = 'USD';
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  currencyCode?: string; // brand currencyCode
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  countryCode?: string; // brand countryCode
+
+  @ApiProperty({ required: false, enum: ['name', 'price', 'modifiedDate'], default: 'name' })
+  @IsOptional()
+  @IsString()
+  sortBy?: 'name' | 'price' | 'modifiedDate' = 'name';
+
+  @ApiProperty({ required: false, enum: ['asc', 'desc'], default: 'asc' })
+  @IsOptional()
+  @IsString()
+  sortDir?: 'asc' | 'desc' = 'asc';
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  inStock?: boolean; // products.count > 0
 }

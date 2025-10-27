@@ -7,9 +7,20 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: (process.env.CORS_ORIGINS || '*').split(','),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   // Security
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,
@@ -17,6 +28,20 @@ async function bootstrap() {
       standardHeaders: true,
       legacyHeaders: false,
     }),
+  );
+
+  // Stricter per-IP rate limits for sensitive routes
+  const windowMs = Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+  const authMax = Number(process.env.AUTH_RATE_LIMIT_MAX || 20);
+  const purchaseMax = Number(process.env.PURCHASE_RATE_LIMIT_MAX || 30);
+
+  app.use(
+    '/auth',
+    rateLimit({ windowMs, max: authMax, standardHeaders: true, legacyHeaders: false }),
+  );
+  app.use(
+    ['/purchase', '/purchase/auth'],
+    rateLimit({ windowMs, max: purchaseMax, standardHeaders: true, legacyHeaders: false }),
   );
 
   // Global Validation
