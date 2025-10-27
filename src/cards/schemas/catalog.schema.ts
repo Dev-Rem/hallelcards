@@ -35,6 +35,8 @@ class Product {
   @Prop({ required: true }) modifiedDate: Date;
 
   @Prop({ type: Converted }) converted: Converted;
+
+  @Prop({ required: false }) markupOverride?: number; // percent override
 }
 
 @Schema({ _id: false })
@@ -73,6 +75,8 @@ export class Brand {
   @Prop({ type: [Category], default: [] }) categories: Category[];
 
   @Prop({ default: 0 }) __v: number;
+
+  @Prop({ required: false }) markupOverride?: number; // percent override
 }
 
 export const BrandSchema = SchemaFactory.createForClass(Brand);

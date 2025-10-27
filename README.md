@@ -53,6 +53,48 @@ APP_URL=http://localhost:3000
 SYNC_CRON=0 */1 * * *
 ```
 
+## .env example
+
+```
+PORT=3000
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:5173,http://localhost:4200
+
+MONGO_URI=mongodb://localhost:27017/hallelcards
+
+JWT_SECRET=changeme
+JWT_EXPIRES_IN=3600s
+JWT_ADMIN_SECRET=admin-changeme
+
+PAYSTACK_SECRET_KEY=sk_test_xxx
+
+SMTP_USER=your@gmail.com
+SMTP_PASS=app-password
+SMTP_HOST=
+ADMIN_NOTIFY_EMAIL=admin@yourdomain.com
+
+THIRD_PARTY_API_URL=https://provider.example.com/getProducts
+THIRD_PARTY_API_KEY=provider-key
+
+OPENEXCHANGERATES_API_URL=https://openexchangerates.org/api/latest.json
+OPENEXCHANGERATES_APP_ID=oxr-app-id
+
+SYNC_CRON=0 * * * *
+OXR_CRON=0 */6 * * *
+
+GIFTCARD_BATCH_SIZE=200
+```
+
+## Quick start
+
+```bash
+npm i
+cp .env.example .env
+npm run start:dev
+```
+
+Swagger: http://localhost:3000/api-docs
+
 ## Compile and run the project
 
 ```bash
