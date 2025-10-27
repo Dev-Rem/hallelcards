@@ -4,6 +4,9 @@ import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { TransactionsService } from '../transactions/transactions.service';
 import { PaystackService } from './paystack.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { WebhookEvent, WebhookEventDocument } from './schemas/webhook-event.schema';
 
 @ApiTags('payments')
 @Controller('payments/webhook')
@@ -12,6 +15,8 @@ export class WebhookController {
     private readonly config: ConfigService,
     private readonly tx: TransactionsService,
     private readonly paystack: PaystackService,
+    @InjectModel(WebhookEvent.name)
+    private readonly whModel: Model<WebhookEventDocument>,
   ) {}
 
   @Post('paystack')
@@ -28,6 +33,13 @@ export class WebhookController {
 
     const event = payload?.event as string;
     const reference = payload?.data?.reference as string;
+    await this.whModel.create({
+      provider: 'paystack',
+      event,
+      reference,
+      signatureValid: computed === signature,
+      payload,
+    });
     if (!reference) return { ok: true };
 
     if (event?.includes('success')) {
