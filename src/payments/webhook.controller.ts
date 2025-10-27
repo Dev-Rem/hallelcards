@@ -48,8 +48,8 @@ export class WebhookController {
       const verification = await this.paystack.verify(reference);
       await this.tx.markSuccessIfValidPaystack(reference, verification);
       // Trigger fulfillment (don’t store any codes; email only)
-      const tx = await this.tx['txModel'].findOne({ paystackReference: reference });
-      if (tx) await this.fulfillment.fulfillAndEmail(tx);
+      const txx = await this.tx.getByReference(reference);
+      if (txx) await this.fulfillment.fulfillAndEmail(txx);
     } else if (event?.includes('failed')) {
       await this.tx.markFailedByReference(reference, payload);
     }
