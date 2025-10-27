@@ -10,6 +10,8 @@ import { PaymentsModule } from '../payments/payments.module';
 import { SettingsModule } from '../settings/settings.module';
 import { DiscountsModule } from '../discounts/discounts.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { UsersModule } from '../users/users.module';
+import { FulfillmentService } from './fulfillment.service';
 
 @Module({
   imports: [
@@ -18,13 +20,14 @@ import { NotificationsModule } from '../notifications/notifications.module';
     SettingsModule,
     DiscountsModule,
     NotificationsModule,
+    UsersModule,
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
       { name: Brand.name, schema: BrandSchema },
     ]),
   ],
   controllers: [TransactionsController, AdminTransactionsController],
-  providers: [TransactionsService],
+  providers: [TransactionsService, FulfillmentService],
   exports: [TransactionsService],
 })
 export class TransactionsModule {}
