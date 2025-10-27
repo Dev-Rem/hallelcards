@@ -8,7 +8,7 @@ export class PaystackService {
   private readonly secretKey: string;
 
   constructor(private readonly config: ConfigService) {
-    this.secretKey = this.config.get<string>('PAYSTACK_SECRET_KEY') as string;
+    this.secretKey = this.config.get<string>('PAYSTACK_SECRET_KEY');
   }
 
   async initializePayment(email: string, amountNaira: number) {
@@ -26,6 +26,18 @@ export class PaystackService {
       `${this.baseUrl}/transaction/verify/${reference}`,
       { headers: { Authorization: `Bearer ${this.secretKey}` } },
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return res.data.data;
+  }
+
+  async refund(reference: string, amountNaira?: number) {
+    const body: Record<string, unknown> = { reference };
+    if (typeof amountNaira === 'number') {
+      body.amount = Math.round(amountNaira * 100);
+    }
+    const res = await axios.post(`${this.baseUrl}/refund`, body, {
+      headers: { Authorization: `Bearer ${this.secretKey}` },
+    });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return res.data.data;
   }
