@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { FxRateDto, RefreshedDto } from './dto/fx-responses.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UsdConversion, UsdConversionDocument } from '../cards/schemas/usd-conversion.schema';
@@ -8,7 +9,10 @@ import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { FxUpdaterService } from './fx-updater.service';
 
+import { IsNumber } from 'class-validator';
+
 class UpdateRateDto {
+  @IsNumber()
   value!: number;
 }
 
@@ -25,16 +29,19 @@ export class AdminFxController {
   ) {}
 
   @Get('rates')
+  @ApiOkResponse({ description: 'List FX rates', type: [FxRateDto] })
   async list() {
     return this.usdModel.find().sort({ currencyCode: 1 }).lean();
   }
 
   @Get('rates/:code')
+  @ApiOkResponse({ description: 'Get one FX rate', type: FxRateDto })
   async get(@Param('code') code: string) {
     return this.usdModel.findOne({ currencyCode: String(code).toUpperCase() }).lean();
   }
 
   @Put('rates/:code')
+  @ApiOkResponse({ description: 'Updated FX rate', type: FxRateDto })
   async update(@Param('code') code: string, @Body() dto: UpdateRateDto) {
     const updated = await this.usdModel.findOneAndUpdate(
       { currencyCode: String(code).toUpperCase() },
@@ -45,6 +52,7 @@ export class AdminFxController {
   }
 
   @Post('refresh')
+  @ApiOkResponse({ description: 'FX refresh started', type: RefreshedDto })
   async refresh() {
     await this.fxUpdater.updateRates();
     return { refreshed: true };
