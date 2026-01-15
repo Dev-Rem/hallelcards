@@ -1,6 +1,27 @@
-import { Body, Controller, Get, Param, Put, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AdminMetricsSummaryDto, AdminPurchaseDetailResponseDto, AdminPurchaseListResponseDto, RefundResponseDto, TopBrandMetricDto } from './dto/admin-responses.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  AdminMetricsSummaryDto,
+  AdminPurchaseDetailResponseDto,
+  AdminPurchaseListResponseDto,
+  RefundResponseDto,
+  TopBrandMetricDto,
+} from './dto/admin-responses.dto';
 import { TransactionsService } from './transactions.service';
 import { AdminQueryPurchasesDto } from './dto/admin-query-purchases.dto';
 import { Roles } from '../common/roles.decorator';
@@ -18,18 +39,29 @@ export class AdminTransactionsController {
   constructor(private readonly tx: TransactionsService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Admin purchases list', type: AdminPurchaseListResponseDto })
+  @ApiOperation({ summary: 'List purchases with filters and pagination' })
+  @ApiOkResponse({
+    description: 'Admin purchases list',
+    type: AdminPurchaseListResponseDto,
+  })
   async list(@Query() query: AdminQueryPurchasesDto) {
     return this.tx.adminQueryPurchases(query);
   }
 
   @Get(':id')
-  @ApiOkResponse({ description: 'Purchase detail', type: AdminPurchaseDetailResponseDto })
+  @ApiOperation({ summary: 'Get purchase detail by id' })
+  @ApiParam({ name: 'id', description: 'Transaction id' })
+  @ApiOkResponse({
+    description: 'Purchase detail',
+    type: AdminPurchaseDetailResponseDto,
+  })
   async detail(@Param('id') id: string) {
     return this.tx.adminGetPurchaseById(id);
   }
 
   @Put(':id/status')
+  @ApiOperation({ summary: 'Update purchase status' })
+  @ApiParam({ name: 'id', description: 'Transaction id' })
   @ApiOkResponse({ description: 'Status updated', type: Object })
   async updateStatus(
     @Param('id') id: string,
@@ -39,25 +71,34 @@ export class AdminTransactionsController {
   }
 
   @Get('metrics/summary')
-  @ApiOkResponse({ description: 'Summary metrics', type: AdminMetricsSummaryDto })
+  @ApiOperation({ summary: 'Get summary metrics for purchases' })
+  @ApiOkResponse({
+    description: 'Summary metrics',
+    type: AdminMetricsSummaryDto,
+  })
   async summary(@Query('from') from?: string, @Query('to') to?: string) {
     return this.tx.adminMetricsSummary(from, to);
   }
 
   @Get('metrics/top-brands')
-  @ApiOkResponse({ description: 'Top brands by revenue', type: [TopBrandMetricDto] })
-  async topBrands(@Query('limit') limit = 10, @Query('from') from?: string, @Query('to') to?: string) {
+  @ApiOperation({ summary: 'Top brands by revenue' })
+  @ApiOkResponse({
+    description: 'Top brands by revenue',
+    type: [TopBrandMetricDto],
+  })
+  async topBrands(
+    @Query('limit') limit = 10,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
     return this.tx.adminTopBrands(Number(limit), from, to);
   }
 
   @Post(':id/refund')
+  @ApiOperation({ summary: 'Initiate refund through Paystack' })
+  @ApiParam({ name: 'id', description: 'Transaction id' })
   @ApiOkResponse({ description: 'Refund initiated', type: RefundResponseDto })
-  async refund(
-    @Param('id') id: string,
-    @Body() body: AdminRefundDto,
-  ) {
+  async refund(@Param('id') id: string, @Body() body: AdminRefundDto) {
     return this.tx.adminRefund(id, body.amount);
   }
 }
-
-
