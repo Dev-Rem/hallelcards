@@ -1,5 +1,5 @@
 import { Body, Controller, Headers, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { TransactionsService } from '../transactions/transactions.service';
@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { WebhookEvent, WebhookEventDocument } from './schemas/webhook-event.schema';
 import { FulfillmentService } from '../transactions/fulfillment.service';
+import { WebhookOkResponseDto } from './dto/payments.dto';
 
 @ApiTags('payments')
 @Controller('payments/webhook')
@@ -22,6 +23,9 @@ export class WebhookController {
   ) {}
 
   @Post('paystack')
+  @ApiOperation({ summary: 'Paystack webhook endpoint' })
+  @ApiHeader({ name: 'x-paystack-signature', required: true, description: 'HMAC SHA512 signature' })
+  @ApiOkResponse({ description: 'Webhook processed', type: WebhookOkResponseDto })
   async handlePaystack(
     @Headers('x-paystack-signature') signature: string,
     @Body() payload: any,

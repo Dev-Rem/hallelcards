@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaystackService } from './paystack.service';
+import { PaystackInitRequestDto, PaystackInitResponseDto } from './dto/payments.dto';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -9,17 +10,9 @@ export class PaymentsController {
 
   // Optional direct init endpoint; primary flow uses /purchase
   @Post('paystack/init')
-  @ApiOkResponse({
-    description: 'Initialize a Paystack payment session',
-    schema: {
-      type: 'object',
-      properties: {
-        authorization_url: { type: 'string' },
-        reference: { type: 'string' },
-      },
-    },
-  })
-  async init(@Body() body: { email: string; amount: number }) {
+  @ApiOperation({ summary: 'Initialize a Paystack payment session' })
+  @ApiOkResponse({ description: 'Paystack init payload', type: PaystackInitResponseDto })
+  async init(@Body() body: PaystackInitRequestDto) {
     return this.paystack.initializePayment(body.email, body.amount);
   }
 }
