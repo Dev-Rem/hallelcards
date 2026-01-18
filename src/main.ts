@@ -17,7 +17,8 @@ async function bootstrap() {
   // Security
   app.use(
     helmet({
-      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production' ? undefined : false,
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
@@ -37,11 +38,21 @@ async function bootstrap() {
 
   app.use(
     '/auth',
-    rateLimit({ windowMs, max: authMax, standardHeaders: true, legacyHeaders: false }),
+    rateLimit({
+      windowMs,
+      max: authMax,
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
   );
   app.use(
     ['/purchase', '/purchase/auth'],
-    rateLimit({ windowMs, max: purchaseMax, standardHeaders: true, legacyHeaders: false }),
+    rateLimit({
+      windowMs,
+      max: purchaseMax,
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
   );
 
   // Global Validation
@@ -69,7 +80,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 
-  const port = Number(process.env.PORT || 3000);
+  const port = Number(process.env.PORT);
   await app.listen(port);
 }
 void bootstrap();

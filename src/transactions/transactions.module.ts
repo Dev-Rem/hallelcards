@@ -28,6 +28,6 @@ import { FulfillmentService } from './fulfillment.service';
   ],
   controllers: [TransactionsController, AdminTransactionsController],
   providers: [TransactionsService, FulfillmentService],
-  exports: [TransactionsService],
+  exports: [TransactionsService, FulfillmentService],
 })
 export class TransactionsModule {}
