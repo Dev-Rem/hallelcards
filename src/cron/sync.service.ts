@@ -27,6 +27,8 @@ export class SyncService {
     this.logger.log('Starting unified catalog sync...');
     const { processed, errors, duration } =
       await this.adminCards.syncFromProviderAndConvert();
-    this.logger.log(`Sync completed; processed=${processed} errors=${errors} in ${duration}ms`);
+    this.logger.log(
+      `Sync completed; processed=${processed} errors=${errors} in ${duration}ms`,
+    );
   }
 }

@@ -93,6 +93,7 @@ export class AdminCardsService {
       const batchSize = Number(process.env.GIFTCARD_BATCH_SIZE) || 200;
       let processed = 0;
       let errors = 0;
+      const providerIds = new Set<string>();
 
       for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
@@ -100,6 +101,7 @@ export class AdminCardsService {
         const displayOps = batch
           .map((rec) => {
             try {
+              if (rec?.internalId) providerIds.add(String(rec.internalId));
               const products = Array.isArray(rec.products)
                 ? rec.products.map((p: any) =>
                     this.convertProduct(
@@ -150,6 +152,13 @@ export class AdminCardsService {
         }
       }
 
+      // Delete brands that no longer exist in provider
+      if (providerIds.size > 0) {
+        await this.brandModel.deleteMany({
+          internalId: { $nin: Array.from(providerIds) },
+        });
+      }
+
       const duration = Date.now() - start;
       return { processed, errors, duration };
     } finally {
@@ -184,10 +193,15 @@ export class AdminCardsService {
   }
 
   private async loadUsdConversionMap(): Promise<Record<string, number>> {
-    const docs = await this.usdConversionModel.find().lean();
+    let docs = await this.usdConversionModel.find().lean();
+    if (!docs || docs.length === 0) {
+      await this.fetchAndStoreUsdRates();
+      docs = await this.usdConversionModel.find().lean();
+    }
     const map: Record<string, number> = {};
-    for (const d of docs)
+    for (const d of docs) {
       map[(d.currencyCode || '').toUpperCase()] = d.value || 1;
+    }
     if (!map['USD']) map['USD'] = 1;
     return map;
   }
@@ -201,5 +215,41 @@ export class AdminCardsService {
       throw new Error('Failed to fetch NGN rate');
     }
     return Math.ceil(ngn / 1000) * 1000;
+  }
+
+  private async fetchAndStoreUsdRates(): Promise<void> {
+    const OXR_URL = process.env.OPENEXCHANGERATES_API_URL;
+    const OXR_KEY = process.env.OPENEXCHANGERATES_APP_ID;
+    const { data } = await axios.get(`${OXR_URL}?app_id=${OXR_KEY}`);
+    const rates = data?.rates || {};
+    const ops: Array<{
+      updateOne: {
+        filter: { currencyCode: string };
+        update: {
+          $set: { currencyCode: string; value: number; dateModified: Date };
+        };
+        upsert: true;
+      };
+    }> = [];
+    for (const cur of Object.keys(rates)) {
+      const ratePerUsd = rates[cur];
+      if (!ratePerUsd || typeof ratePerUsd !== 'number') continue;
+      const toUsd = cur.toUpperCase() === 'USD' ? 1 : 1 / ratePerUsd;
+      ops.push({
+        updateOne: {
+          filter: { currencyCode: cur.toUpperCase() },
+          update: {
+            $set: {
+              currencyCode: cur.toUpperCase(),
+              value: toUsd,
+              dateModified: new Date(),
+            },
+          },
+          upsert: true,
+        },
+      });
+    }
+    if (ops.length)
+      await this.usdConversionModel.bulkWrite(ops as any, { ordered: false });
   }
 }

@@ -16,6 +16,7 @@ import { SettingsModule } from './settings/settings.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CronModule } from './cron/cron.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { CronModule } from './cron/cron.module';
     DiscountsModule,
     NotificationsModule,
     CronModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

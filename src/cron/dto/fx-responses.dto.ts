@@ -9,5 +9,3 @@ export class FxRateDto {
 export class RefreshedDto {
   @ApiProperty() refreshed!: boolean;
 }
-
-

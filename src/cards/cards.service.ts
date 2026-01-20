@@ -37,7 +37,8 @@ export class CardsService {
     if (category) match['categories.name'] = category;
     if (currencyCode) match['currencyCode'] = currencyCode.toUpperCase();
     if (countryCode) match['countryCode'] = countryCode.toUpperCase();
-    if (typeof inStock === 'boolean') match['products.count'] = inStock ? { $gt: 0 } : 0;
+    if (typeof inStock === 'boolean')
+      match['products.count'] = inStock ? { $gt: 0 } : 0;
 
     if (minPrice || maxPrice) {
       const priceField =
@@ -45,14 +46,17 @@ export class CardsService {
           ? 'products.converted.minNgn'
           : 'products.converted.minUsd';
       match[priceField] = {} as any;
-      if (minPrice) (match[priceField] as any).$gte = minPrice;
-      if (maxPrice) (match[priceField] as any).$lte = maxPrice;
+      if (minPrice) match[priceField].$gte = minPrice;
+      if (maxPrice) match[priceField].$lte = maxPrice;
     }
 
     const sortStage: Record<string, 1 | -1> = {};
     if (sortBy === 'price') {
-      sortStage[priceCurrency === 'NGN' ? 'products.converted.minNgn' : 'products.converted.minUsd'] =
-        sortDir === 'desc' ? -1 : 1;
+      sortStage[
+        priceCurrency === 'NGN'
+          ? 'products.converted.minNgn'
+          : 'products.converted.minUsd'
+      ] = sortDir === 'desc' ? -1 : 1;
     } else if (sortBy === 'modifiedDate') {
       sortStage['modifiedDate'] = sortDir === 'desc' ? -1 : 1;
     } else {
