@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -11,7 +18,6 @@ import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyResetPasswordDto } from './dto/verify-reset-password.dto';
 import {
-  AdminLoginResponseDto,
   LoginResponseDto,
   RegisterResponseDto,
   ResetPasswordRequestResponseDto,
@@ -31,6 +37,9 @@ export class AuthController {
     type: RegisterResponseDto,
   })
   async register(@Body() dto: RegisterDto) {
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
     return this.auth.register(dto);
   }
 
@@ -39,16 +48,6 @@ export class AuthController {
   @ApiOkResponse({ description: 'Login successful', type: LoginResponseDto })
   async login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
-  }
-
-  @Post('admin/login')
-  @ApiOperation({ summary: 'Admin login with elevated token' })
-  @ApiOkResponse({
-    description: 'Admin login successful',
-    type: AdminLoginResponseDto,
-  })
-  async adminLogin(@Body() dto: LoginDto) {
-    return this.auth.adminLogin(dto);
   }
 
   @Get('verify')

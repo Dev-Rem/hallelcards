@@ -69,28 +69,6 @@ export class AuthService {
     return { accessToken, message: 'Login successful' };
   }
 
-  async adminLogin(dto: LoginDto) {
-    const user = await this.userModel.findOne({ email: dto.email });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-    const ok = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!ok) throw new UnauthorizedException('Invalid credentials');
-    if (!user.roles?.includes(UserRole.ADMIN))
-      throw new UnauthorizedException('Admin role required');
-    const payload = {
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      sub: user._id.toString(),
-      roles: user.roles,
-      email: user.email,
-    };
-    const adminSecret =
-      this.config.get<string>('JWT_ADMIN_SECRET') ||
-      this.config.get<string>('JWT_SECRET');
-    const accessToken = await this.jwt.signAsync(payload, {
-      secret: adminSecret,
-    });
-    return { accessToken, message: 'Admin login successful' };
-  }
-
   async sendVerificationEmail(userId: string, email: string) {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h

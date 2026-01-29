@@ -23,12 +23,6 @@ export class User {
     default: [UserRole.USER],
   })
   roles: UserRole[];
-
-  @Prop({ required: true })
-  createdAt: Date;
-
-  @Prop({ required: true })
-  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
